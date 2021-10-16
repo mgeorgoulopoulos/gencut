@@ -1,0 +1,116 @@
+#include "Application.h"
+
+#include "GeneSignalFactory.h"
+#include "GenomeCutter.h"
+#include "GenomeModel.h"
+
+#include <algorithm>
+#include <chrono>
+#include <iterator>
+
+struct Application::Private {
+	Private::Private(const Application::Arguments &arguments)
+		: arguments(arguments) {}
+
+	void initializeObjects();
+
+	Application::Arguments arguments;
+
+	AtomBox geneRegistry;
+	GenomeModel model;
+	GeneSignalPtr signal;
+};
+
+Application::Application(const Arguments &arguments)
+	: d(new Private(arguments)) {}
+
+Application::~Application() { delete d; }
+
+void Application::execute() {
+	// Start clock
+	std::chrono::steady_clock::time_point startTime =
+		std::chrono::steady_clock::now();
+
+	// Print options
+	printf("Configuration:\n");
+	printf("\tGenome 3D model: %s\n",
+		   d->arguments.modelOptions.filename.c_str());
+	printf("\tGene signal: %s\n",
+		   d->arguments.signalOptions.dataFilename.c_str());
+	printf("\tOutput file: %s\n", d->arguments.outputFilename.c_str());
+	printf("\n");
+	printf("Signal options:\n");
+	d->arguments.signalOptions.print();
+	printf("Segmentation options:\n");
+	d->arguments.cutterOptions.print();
+	printf("---------------------------\n");
+
+	d->initializeObjects();
+
+	// Finally ... cut!
+	GenomeCutter cutter(d->model, d->signal, d->arguments.cutterOptions);
+	std::vector<GeneSet> clusters = cutter.cut();
+
+	// Get set of genes not belonging to any cluster, to accompany the rest
+	GeneSet unclusteredGenes = d->model.geneSet();
+	for (const GeneSet &cluster : clusters) {
+		for (GeneId gene : cluster) {
+			unclusteredGenes.erase(gene);
+		}
+	}
+
+	// Write output file
+	FILE *fp = fopen(d->arguments.outputFilename.c_str(), "w");
+	fprintf(fp, "Gene,Cluster\n");
+	for (int i = 0; i < (int)clusters.size(); i++) {
+		const char groupLetter = 'A' + i;
+		for (const GeneId gene : clusters[i]) {
+			const std::string geneName = d->geneRegistry.name(gene);
+			fprintf(fp, "%s,%c\n", geneName.c_str(), groupLetter);
+		}
+	}
+	// And the unclustered ones, with <null> cluster name
+	for (const GeneId gene : unclusteredGenes) {
+		const std::string geneName = d->geneRegistry.name(gene);
+		fprintf(fp, "%s,\n", geneName.c_str());
+	}
+	fclose(fp);
+	// Report time
+	std::chrono::steady_clock::time_point endTime =
+		std::chrono::steady_clock::now();
+	const double minutes =
+		std::chrono::duration_cast<std::chrono::minutes>(endTime - startTime)
+			.count();
+	printf("Elapsed time: %.02f minutes\n", minutes);
+}
+
+void Application::Private::initializeObjects() {
+	// Load signal
+	GeneSignalFactory signalFactory;
+	signal = signalFactory.create(arguments.signalOptions, geneRegistry);
+
+	// Load 3D model
+	model = GenomeModel(arguments.modelOptions, geneRegistry);
+
+	// Negotiate gene lists between signal and model. We will remove nonexistent
+	// genes in signal from model.
+	GeneSet genesInSignal = signal->geneSet();
+	GeneSet genesInModel = model.geneSet();
+	GeneSet difference;
+	std::set_difference(genesInModel.begin(), genesInModel.end(),
+						genesInSignal.begin(), genesInSignal.end(),
+						std::inserter(difference, difference.begin()));
+
+	if (!difference.empty()) {
+		printf("Removing %d genes from the 3D model because they don't exist "
+			   "in the signal.\n",
+			   difference.size());
+		for (GeneId gene : difference) {
+			const std::string name = geneRegistry.name(gene);
+			printf("%s ", name.c_str());
+		}
+		printf("\n");
+		model.removeGenes(difference);
+		printf("3D model remains with %d genes\n", model.geneSet().size());
+	}
+}
