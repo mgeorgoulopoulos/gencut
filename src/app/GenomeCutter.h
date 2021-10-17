@@ -39,7 +39,8 @@ class GenomeCutter {
 		enum class TailSelection {Low, High, Both};
 		TailSelection tailSelection = TailSelection::Low;
 
-		void print();
+		void print() const;
+		void printHelp() const;
 	};
 
 	GenomeCutter(const GenomeModel &model, const GeneSignalPtr signal,

@@ -14,6 +14,7 @@ class GeneSignal {
 		std::string metric;
 
 		void print() const;
+		void printHelp() const;
 	};
 	GeneSignal(const Options &options, AtomBox &geneRegistry);
 	virtual ~GeneSignal();

@@ -30,6 +30,8 @@ class GenomeModel {
 
 	struct Options {
 		std::string filename;
+
+		void printHelp();
 	};
 
 	GenomeModel();

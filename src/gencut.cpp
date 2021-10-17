@@ -33,7 +33,17 @@ int main(int argc, char *argv[]) {
 Application::Arguments parseCommandLine(const std::vector<std::string> &argv) {
 	Application::Arguments result;
 
-	if (argv.size() % 2 != 0) {
+	// Parse switches
+	std::vector<std::string> binaryArguments;
+	for (const std::string &token : argv) {
+		if (token == "--help") {
+			result.displayHelp = true;
+			continue;
+		}
+		binaryArguments.push_back(token);
+	}
+
+	if (binaryArguments.size() % 2 != 0) {
 		throw(Exception({"All arguments must come in pairs like: --arg value. "
 						 "You passed an odd number of command line tokens."}));
 	}
@@ -46,10 +56,10 @@ Application::Arguments parseCommandLine(const std::vector<std::string> &argv) {
 
 	std::vector<NamedArgument> namedArguments;
 
-	for (int i = 0; i < argv.size(); i += 2) {
+	for (int i = 0; i < binaryArguments.size(); i += 2) {
 		NamedArgument arg;
-		arg.name = argv[i];
-		arg.value = argv[i + 1];
+		arg.name = binaryArguments[i];
+		arg.value = binaryArguments[i + 1];
 
 		if (arg.name.size() < 2 || arg.name[0] != '-' || arg.name[1] != '-') {
 			throw(Exception({"Misplaced token in argument list: ", arg.name,

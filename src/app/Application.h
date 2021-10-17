@@ -12,11 +12,15 @@
 class Application {
   public:
 	struct Arguments {
+		bool displayHelp = false;
+
 		GenomeModel::Options modelOptions;
 		GeneSignal::Options signalOptions;
 		GenomeCutter::Options cutterOptions;
 
 		std::string outputFilename;
+
+		void printHelp();
 
 	};
 

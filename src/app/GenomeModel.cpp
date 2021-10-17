@@ -5,6 +5,11 @@
 
 #include <rapidcsv.h>
 
+void GenomeModel::Options::printHelp() {
+	printf("\t--model filename\t\tLoad 3D positions per gene from CSV "
+		   "file 'filename'.\n");
+}
+
 GenomeModel::GenomeModel() {}
 
 GenomeModel::GenomeModel(const Options &options, AtomBox &geneRegistry) {

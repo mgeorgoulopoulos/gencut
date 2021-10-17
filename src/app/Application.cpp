@@ -8,6 +8,21 @@
 #include <chrono>
 #include <iterator>
 
+void Application::Arguments::printHelp() {
+	printf("gencut [--help] [--binaryArguments values]\n");
+	printf("\t--help\t\tDisplay this help message and exist\n");
+	printf("\n");
+	printf("Genome 3D model options:\n");
+	modelOptions.printHelp();
+	printf("\n");
+	printf("Gene signal options:\n");
+	signalOptions.printHelp();
+	printf("\n");
+	printf("Processing options:\n");
+	cutterOptions.printHelp();
+	printf("\n");
+}
+
 struct Application::Private {
 	Private::Private(const Application::Arguments &arguments)
 		: arguments(arguments) {}
@@ -27,6 +42,11 @@ Application::Application(const Arguments &arguments)
 Application::~Application() { delete d; }
 
 void Application::execute() {
+	if (d->arguments.displayHelp) {
+		d->arguments.printHelp();
+		return;
+	}
+
 	// Start clock
 	std::chrono::steady_clock::time_point startTime =
 		std::chrono::steady_clock::now();

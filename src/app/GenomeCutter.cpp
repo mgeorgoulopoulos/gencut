@@ -10,7 +10,7 @@
 #include <iterator>
 #include <random>
 
-void GenomeCutter::Options::print() {
+void GenomeCutter::Options::print() const {
 	printf("\tSphere radius: %f\n", sphereRadius);
 	printf("\tMinimum gene count: %d\n", minimumGeneCount);
 	printf("\tRandom sample count: %d\n", randomSphereCount);
@@ -32,6 +32,26 @@ void GenomeCutter::Options::print() {
 		break;
 	}
 	printf("\n");
+}
+
+void GenomeCutter::Options::printHelp() const {
+	printf("\t--radius r\t\tSpecify radius of the sampling sphere, in model "
+		   "space. Default is r=15.0\n");
+	printf("\t--min-genes N\t\tAn acceptable sphere-sample must have at least "
+		   "N genes. Default is 50.\n");
+	printf("\t--samples N\t\tGenerate N random spheres. Default is 10^5.\n");
+	printf(
+		"\t--p-samples N\t\tCalculate the metric over N random sets of genes "
+		"(not spatially associated) to assess signal distribution. Default is "
+		"10^5 samples which yields a p-value resolution of 10^-5.\n");
+	printf("\t--padj-threshold p\t\tThreshold of adjusted p-value to be "
+		   "considered as significant. Default is p=0.01.\n");
+	printf("\t--overlap-threshold t\t\tOverlap raio considered as distinct. "
+		   "Default is 0.05, which means two gene sets A and B are considered "
+		   "distinct when the share less than 5%% of their genes.\n");
+	printf("\t--tail low|high|both\t\tWhich end of the distribution will be "
+		   "used to calculate a p-value? 'both' specifies a double-tailed "
+		   "test. 'low' and 'high' specify single-tailed.\n");
 }
 
 namespace {
