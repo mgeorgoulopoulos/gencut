@@ -12,6 +12,15 @@ void Application::Arguments::printHelp() {
 	printf("gencut [--help] [--binaryArguments values]\n");
 	printf("\t--help\t\tDisplay this help message and exist\n");
 	printf("\n");
+	printf("General options\n");
+	printf("\t--settings filename\t\tLoad arguments from 'filename'. This is a "
+		   "CSV file containing two columns: 'key' and 'value'. 'key' column "
+		   "expects the same named arguments used in command line. For "
+		   "example, using --radius 123.0 in commad line is equivalent to "
+		   "loading a settings file with two rows: header will contain "
+		   "'key,value' and the row below will contain 'radius,123.0'. Please "
+		   "omit the '--' prefix in the CSV.\n");
+	printf("\n");
 	printf("Genome 3D model options:\n");
 	modelOptions.printHelp();
 	printf("\n");

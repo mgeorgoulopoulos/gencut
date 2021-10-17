@@ -3,6 +3,8 @@
 #include <app/StringConstants.h>
 #include <utils/Exception.h>
 
+#include <rapidcsv.h>
+
 #include <stdio.h>
 #include <vector>
 
@@ -30,6 +32,53 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
+namespace {
+// Name/value pair for --argumentName argumentValue command line tokens.
+struct NamedArgument {
+	std::string name;
+	std::string value;
+};
+
+std::vector<NamedArgument> readSettingsFromCsv(const std::string &filename) {
+	printf("Loading settings from CSV file: %s\n", filename.c_str());
+	rapidcsv::Document doc(filename);
+
+	// Verify that the CSV has the correct columns
+	const std::vector<std::string> columnNames = doc.GetColumnNames();
+	const std::vector<std::string> expectedColumnNames = {kkey, kvalue};
+
+	if (columnNames.size() != expectedColumnNames.size()) {
+		throw(Exception({filename, "2 columns expected"}));
+	}
+
+	for (int i = 0; i < (int)columnNames.size(); i++) {
+		if (columnNames[i] != expectedColumnNames[i]) {
+			throw(Exception({"Settings file:", filename,
+							 "Expected column:", expectedColumnNames[i],
+							 "Actual column:", columnNames[i]}));
+		}
+	}
+
+	// Now load rows
+	std::vector<NamedArgument> result;
+	for (int i = 0; i < (int)doc.GetRowCount(); i++) {
+		std::vector<std::string> row = doc.GetRow<std::string>(i);
+		if (row.size() != 2) {
+			throw(Exception(
+				{"Invalid row in settings file:", filename,
+				 "Exactly one key and one value are expected per row."}));
+		}
+		NamedArgument arg;
+		arg.name = row[0];
+		arg.value = row[1];
+		result.push_back(arg);
+	}
+
+	return result;
+}
+
+} // end anonymous namespace
+
 Application::Arguments parseCommandLine(const std::vector<std::string> &argv) {
 	Application::Arguments result;
 
@@ -48,12 +97,6 @@ Application::Arguments parseCommandLine(const std::vector<std::string> &argv) {
 						 "You passed an odd number of command line tokens."}));
 	}
 
-	// Get pairs of --arg value
-	struct NamedArgument {
-		std::string name;
-		std::string value;
-	};
-
 	std::vector<NamedArgument> namedArguments;
 
 	for (int i = 0; i < binaryArguments.size(); i += 2) {
@@ -68,6 +111,19 @@ Application::Arguments parseCommandLine(const std::vector<std::string> &argv) {
 
 		// Ok. It is well formed
 		arg.name = arg.name.substr(2);
+
+		// For the --settings argument, load settings file and append what we
+		// found.
+		if (arg.name == ksettings) {
+			std::vector<NamedArgument> appendedArguments =
+				readSettingsFromCsv(arg.value);
+			for (const NamedArgument &appendedArgument : appendedArguments) {
+				namedArguments.push_back(appendedArgument);
+			}
+			continue;
+		}
+
+		// It is a normal argument. Just push.
 		namedArguments.push_back(arg);
 	}
 

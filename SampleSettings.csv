@@ -1,0 +1,13 @@
+key,value
+model,G:/Thesis/gencut/data/Scer-Gene-Model.csv
+signal,G:/Thesis/gencut/data/GeneCoexpression.csv
+signal-type,matrix
+metric,average
+radius,15.0
+min-genes,50
+samples,10000
+p-samples,10000
+padj-threshold,0.01
+overlap-threshold,0.05
+tail,high
+output,G:/Thesis/gencut/Output.csv
