@@ -1,13 +1,14 @@
 key,value
 model,G:/Thesis/gencut/data/Scer-Gene-Model.csv
-signal,G:/Thesis/gencut/data/GeneCoexpression.csv
+signal,G:/Thesis/gencut/data/NucleosomeOccupancyBinaryDistanceMatrix.csv
 signal-type,matrix
 metric,average
 radius,15.0
 min-genes,50
 samples,10000
-p-samples,10000
+p-samples,100000
 padj-threshold,0.01
 overlap-threshold,0.05
-tail,high
+tail,low
 output,G:/Thesis/gencut/Output.csv
+stats-output,G:/Thesis/gencut/StatsOutput.csv

@@ -78,11 +78,11 @@ void Application::execute() {
 
 	// Finally ... cut!
 	GenomeCutter cutter(d->model, d->signal, d->arguments.cutterOptions);
-	std::vector<GeneSet> clusters = cutter.cut();
+	GenomeCutter::Result result = cutter.cut();
 
 	// Get set of genes not belonging to any cluster, to accompany the rest
 	GeneSet unclusteredGenes = d->model.geneSet();
-	for (const GeneSet &cluster : clusters) {
+	for (const GeneSet &cluster : result.clusters) {
 		for (GeneId gene : cluster) {
 			unclusteredGenes.erase(gene);
 		}
@@ -91,9 +91,9 @@ void Application::execute() {
 	// Write output file
 	FILE *fp = fopen(d->arguments.outputFilename.c_str(), "w");
 	fprintf(fp, "Gene,Cluster\n");
-	for (int i = 0; i < (int)clusters.size(); i++) {
+	for (int i = 0; i < (int)result.clusters.size(); i++) {
 		const char groupLetter = 'A' + i;
-		for (const GeneId gene : clusters[i]) {
+		for (const GeneId gene : result.clusters[i]) {
 			const std::string geneName = d->geneRegistry.name(gene);
 			fprintf(fp, "%s,%c\n", geneName.c_str(), groupLetter);
 		}
@@ -104,6 +104,18 @@ void Application::execute() {
 		fprintf(fp, "%s,\n", geneName.c_str());
 	}
 	fclose(fp);
+
+	// Output statistics, if requested
+	if (!d->arguments.statsOutputFilename.empty()) {
+		FILE *fp = fopen(d->arguments.statsOutputFilename.c_str(), "w");
+		fprintf(fp, "Metric,pValue,pAdj\n");
+		for (const GenomeCutter::SampleStats &stats : result.sampleStatistics) {
+			fprintf(fp, "%f,%f,%f\n", stats.metric, stats.pValue,
+					stats.adjustedPValue);
+		}
+		fclose(fp);
+	}
+
 	// Report time
 	std::chrono::steady_clock::time_point endTime =
 		std::chrono::steady_clock::now();

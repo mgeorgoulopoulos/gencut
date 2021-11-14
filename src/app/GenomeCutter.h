@@ -47,8 +47,20 @@ class GenomeCutter {
 				 const Options &options);
 	virtual ~GenomeCutter();
 
+	// Statistics of a sphere-sample.
+	struct SampleStats {
+		double metric = 0.0;
+		double pValue = 0.0;
+		double adjustedPValue = 0.0;
+	};
+
+	struct Result {
+		std::vector<GeneSet> clusters;
+		std::vector<SampleStats> sampleStatistics;
+	};
+
 	// Produces segments of the gene model using signal
-	std::vector<GeneSet> cut() const;
+	Result cut() const;
 
   private:
 	struct Private;

@@ -211,7 +211,9 @@ GenomeCutter::GenomeCutter(const GenomeModel &model, const GeneSignalPtr signal,
 
 GenomeCutter::~GenomeCutter() { delete d; }
 
-std::vector<GeneSet> GenomeCutter::cut() const {
+GenomeCutter::Result GenomeCutter::cut() const {
+	Result result;
+
 	// Create n sphere samples
 	printf("Sampling %d spheres... ", d->options.randomSphereCount);
 	std::vector<WorkUnit> workUnits;
@@ -279,6 +281,16 @@ std::vector<GeneSet> GenomeCutter::cut() const {
 	benjamini(workUnits);
 	printf("Done.\n");
 
+	// Export stats
+	result.sampleStatistics.reserve(workUnits.size());
+	for (const WorkUnit &workUnit : workUnits) {
+		SampleStats s;
+		s.metric = workUnit.metric;
+		s.pValue = workUnit.pValue;
+		s.adjustedPValue = workUnit.adjustedPValue;
+		result.sampleStatistics.push_back(s);
+	}
+
 	// Filter by adjusted p-value
 	std::vector<WorkUnit> tmp;
 	std::copy_if(workUnits.begin(), workUnits.end(), std::back_inserter(tmp),
@@ -308,23 +320,23 @@ std::vector<GeneSet> GenomeCutter::cut() const {
 		   "to consider clusters as distinct ... ",
 		   d->options.overlapThreshold * 100.0);
 	double maximumOverlapRatio = 0.0;
-	std::vector<GeneSet> result = clusterByGeneOverlap(
+	result.clusters = clusterByGeneOverlap(
 		workUnits, d->options.overlapThreshold, &maximumOverlapRatio);
 	printf("Done.\n");
 	printf("Stopping clustering with %d clusters, %.02f%% maximum gene "
 		   "overlap.\n",
-		   result.size(), maximumOverlapRatio * 100.0);
+		   result.clusters.size(), maximumOverlapRatio * 100.0);
 
 	// The returned clusters are fairly defined. Sometimes we get a different
 	// number of clusters because this is a random sampling, but mostly we get
 	// the same. Ordering the clusters by size.
 	std::sort(
-		result.begin(), result.end(),
+		result.clusters.begin(), result.clusters.end(),
 		[](const GeneSet &a, const GeneSet &b) { return a.size() < b.size(); });
 
 	// Cleanup duplicate genes - let the smaller cluster retain all its genes
 	GeneSet genesUsed;
-	for (GeneSet &cluster : result) {
+	for (GeneSet &cluster : result.clusters) {
 		GeneSet tmp;
 		std::set_difference(cluster.begin(), cluster.end(), genesUsed.begin(),
 							genesUsed.end(), std::inserter(tmp, tmp.begin()));
@@ -337,8 +349,8 @@ std::vector<GeneSet> GenomeCutter::cut() const {
 	}
 
 	// Report clusters
-	for (int i = 0; i < result.size(); i++) {
-		printf("\tCluster %d: %d genes\n", i + 1, result[i].size());
+	for (int i = 0; i < result.clusters.size(); i++) {
+		printf("\tCluster %d: %d genes\n", i + 1, result.clusters[i].size());
 	}
 
 	// Done

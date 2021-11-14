@@ -166,6 +166,11 @@ Application::Arguments parseCommandLine(const std::vector<std::string> &argv) {
 			continue;
 		}
 
+		if (arg.name == kstats_output) {
+			result.statsOutputFilename = arg.value;
+			continue;
+		}
+
 		if (arg.name == kmin_genes) {
 			try {
 				result.cutterOptions.minimumGeneCount = stoi(arg.value);

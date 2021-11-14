@@ -19,6 +19,7 @@ class Application {
 		GenomeCutter::Options cutterOptions;
 
 		std::string outputFilename;
+		std::string statsOutputFilename;
 
 		void printHelp();
 

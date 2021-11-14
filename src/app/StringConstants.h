@@ -20,6 +20,7 @@ constexpr char *ksamples = "samples";
 constexpr char *ksignal = "signal";
 constexpr char *ksignal_type = "signal-type";
 constexpr char *kStart = "Start";
+constexpr char *kstats_output= "stats-output";
 constexpr char *ktail = "tail";
 constexpr char *koutput = "output";
 constexpr char *koverlap_threshold = "overlap-threshold";
