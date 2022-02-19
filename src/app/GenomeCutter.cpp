@@ -309,7 +309,7 @@ GenomeCutter::Result GenomeCutter::cut() const {
 		}
 	}
 	printf("%d significant genes.\n", significantGenes.size());
-	;
+
 	if (workUnits.empty()) {
 		printf("No significant samples found");
 	}
