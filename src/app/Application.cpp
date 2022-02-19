@@ -8,7 +8,7 @@
 #include <chrono>
 #include <iterator>
 
-void Application::Arguments::printHelp() {
+void Application::Arguments::printHelp() const {
 	printf("gencut [--help] [--binaryArguments values]\n");
 	printf("\t--help\t\tDisplay this help message and exist\n");
 	printf("\n");
@@ -30,6 +30,17 @@ void Application::Arguments::printHelp() {
 	printf("Processing options:\n");
 	cutterOptions.printHelp();
 	printf("\n");
+}
+
+void Application::Arguments::print() const {
+	printf("\tGenome 3D model: %s\n", modelOptions.filename.c_str());
+	printf("\tGene signal: %s\n", signalOptions.dataFilename.c_str());
+	printf("\tOutput file: %s\n", outputFilename.c_str());
+	printf("\n");
+	printf("Signal options:\n");
+	signalOptions.print();
+	printf("Segmentation options:\n");
+	cutterOptions.print();
 }
 
 struct Application::Private {
@@ -62,16 +73,7 @@ void Application::execute() {
 
 	// Print options
 	printf("Configuration:\n");
-	printf("\tGenome 3D model: %s\n",
-		   d->arguments.modelOptions.filename.c_str());
-	printf("\tGene signal: %s\n",
-		   d->arguments.signalOptions.dataFilename.c_str());
-	printf("\tOutput file: %s\n", d->arguments.outputFilename.c_str());
-	printf("\n");
-	printf("Signal options:\n");
-	d->arguments.signalOptions.print();
-	printf("Segmentation options:\n");
-	d->arguments.cutterOptions.print();
+	d->arguments.print();
 	printf("---------------------------\n");
 
 	d->initializeObjects();
@@ -119,10 +121,12 @@ void Application::execute() {
 	// Report time
 	std::chrono::steady_clock::time_point endTime =
 		std::chrono::steady_clock::now();
-	const double minutes =
-		std::chrono::duration_cast<std::chrono::minutes>(endTime - startTime)
+	int seconds =
+		std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime)
 			.count();
-	printf("Elapsed time: %.02f minutes\n", minutes);
+	const int minutes = seconds / 60;
+	seconds %= 60;
+	printf("Elapsed time: %dm %ds\n", minutes, seconds);
 }
 
 void Application::Private::initializeObjects() {

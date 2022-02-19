@@ -21,7 +21,8 @@ class Application {
 		std::string outputFilename;
 		std::string statsOutputFilename;
 
-		void printHelp();
+		void printHelp() const;
+		void print() const;
 
 	};
 
