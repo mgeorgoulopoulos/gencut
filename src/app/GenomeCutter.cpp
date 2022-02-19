@@ -350,7 +350,7 @@ GenomeCutter::Result GenomeCutter::cut() const {
 
 	// Report clusters
 	for (int i = 0; i < result.clusters.size(); i++) {
-		printf("\tCluster %d: %d genes\n", i + 1, result.clusters[i].size());
+		printf("\tCluster %c: %d genes\n", 'A' + i, result.clusters[i].size());
 	}
 
 	// Done
