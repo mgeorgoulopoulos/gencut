@@ -8,7 +8,11 @@
 
 using GeneId = Atom;
 
-class GeneSet : public std::set<GeneId> {};
+class GeneSet : public std::set<GeneId> {
+  public:
+	bool contains(GeneId g) { return find(g) != end();
+	}
+};
 
 class GeneList : public std::vector<GeneId> {};
 
