@@ -13,6 +13,8 @@ class GeneSignalMatrix : public GeneSignal {
 
 	double metric(const GeneList &genes) const override;
 
+	double cell(GeneId a, GeneId b) const;
+
 private:
 	struct Private;
   Private *d = nullptr;

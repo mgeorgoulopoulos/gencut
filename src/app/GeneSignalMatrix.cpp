@@ -132,3 +132,5 @@ GeneSet GeneSignalMatrix::geneSet() const { return d->genes; }
 double GeneSignalMatrix::metric(const GeneList &genes) const {
 	return d->metricFunc(genes);
 }
+
+double GeneSignalMatrix::cell(GeneId a, GeneId b) const { return d->lookup(a, b); }
