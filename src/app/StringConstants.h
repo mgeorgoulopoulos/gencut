@@ -7,6 +7,7 @@ constexpr char *kaverage = "average";
 constexpr char *kboth = "both";
 constexpr char *kChromosome = "Chromosome";
 constexpr char *kEnd  = "End";
+constexpr char *kgene = "gene";
 constexpr char *kGene = "Gene";
 constexpr char *khigh = "high";
 constexpr char *kkey = "key";
