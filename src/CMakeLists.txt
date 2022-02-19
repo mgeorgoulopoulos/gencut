@@ -32,13 +32,23 @@ FetchContent_MakeAvailable(rapidcsv)
 set(SOURCES 
 	"gencut.cpp"
 	"app/Application.cpp"
+	"app/Application.h"
 	"app/GeneMatrix.cpp"
+	"app/GeneMatrix.h"
 	"app/GeneSignal.cpp"
+	"app/GeneSignal.h"
 	"app/GeneSignalFactory.cpp"
+	"app/GeneSignalFactory.h"
 	"app/GeneSignalList.cpp"
+	"app/GeneSignalList.h"
 	"app/GeneSignalMatrix.cpp"
+	"app/GeneSignalMatrix.h"
 	"app/GenomeCutter.cpp"
+	"app/GenomeCutter.h"
 	"app/GenomeModel.cpp"
+	"app/GenomeModel.h"
+	"app/StringConstants.cpp"
+	"app/StringConstants.h"
 )
 
 add_executable(gencut ${SOURCES})
