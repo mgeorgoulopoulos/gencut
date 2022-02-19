@@ -19,11 +19,18 @@ struct GeneSignalMatrix::Private {
 		return matrix[col + row * stride];
 	}
 
+	const double &lookup(GeneId row, GeneId col) const {
+		return matrix[col + row * stride];
+	}
+
 	std::function<double(const GeneList &)> metricFunc = [](const GeneList &) {
 		return 0.0;
 	};
 
 	GeneSet genes;
+
+	// Metrics
+	double average(const GeneList &genes) const;
 };
 
 GeneSignalMatrix::GeneSignalMatrix(const Options &options,
@@ -102,22 +109,7 @@ GeneSignalMatrix::GeneSignalMatrix(const Options &options,
 	// Finally, setup metric
 	if (options.metric == kaverage) {
 		d->metricFunc = [&](const GeneList &genes) {
-			if (genes.size() < 2) {
-				throw(Exception("Empty or size 1 gene list provided for averaging."));
-			}
-			double average = 0.0;
-			int pairCount = 0;
-			for (int j = 0; j < (int)genes.size(); j++) {
-				for (int i = 0; i < (int)genes.size(); i++) {
-					if (i == j)
-						continue;
-					pairCount++;
-					average += d->lookup(genes[j], genes[i]);
-
-				}
-			}
-			average /= (double)pairCount;
-			return average;
+			return d->average(genes);
 		};
 	} else {
 		throw(Exception(
@@ -133,4 +125,24 @@ double GeneSignalMatrix::metric(const GeneList &genes) const {
 	return d->metricFunc(genes);
 }
 
-double GeneSignalMatrix::cell(GeneId a, GeneId b) const { return d->lookup(a, b); }
+double GeneSignalMatrix::cell(GeneId a, GeneId b) const {
+	return d->lookup(a, b);
+}
+
+double GeneSignalMatrix::Private::average(const GeneList &genes) const {
+	if (genes.size() < 2) {
+		throw(Exception("Empty or size 1 gene list provided for averaging."));
+	}
+	double average = 0.0;
+	int pairCount = 0;
+	for (int j = 0; j < (int)genes.size(); j++) {
+		for (int i = 0; i < (int)genes.size(); i++) {
+			if (i == j)
+				continue;
+			pairCount++;
+			average += lookup(genes[j], genes[i]);
+		}
+	}
+	average /= (double)pairCount;
+	return average;
+}
