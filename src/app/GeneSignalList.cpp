@@ -42,7 +42,7 @@ GeneSignalList::GeneSignalList(const Options &options, AtomBox &geneRegistry)
 
 	// Verify that the CSV has the correct columns
 	const std::vector<std::string> columnNames = doc.GetColumnNames();
-	const std::vector<std::string> expectedColumnNames = {kgene, kvalue};
+	const std::vector<std::string> expectedColumnNames = {kGene, kValue};
 
 	if (columnNames.size() != expectedColumnNames.size()) {
 		throw(Exception({options.dataFilename, "2 columns expected"}));
