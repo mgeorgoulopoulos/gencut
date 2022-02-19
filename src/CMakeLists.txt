@@ -35,6 +35,7 @@ set(SOURCES
 	"app/GeneMatrix.cpp"
 	"app/GeneSignal.cpp"
 	"app/GeneSignalFactory.cpp"
+	"app/GeneSignalList.cpp"
 	"app/GeneSignalMatrix.cpp"
 	"app/GenomeCutter.cpp"
 	"app/GenomeModel.cpp"
