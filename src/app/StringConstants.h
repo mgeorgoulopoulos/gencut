@@ -11,6 +11,7 @@ constexpr char *kgene = "gene";
 constexpr char *kGene = "Gene";
 constexpr char *khigh = "high";
 constexpr char *kkey = "key";
+constexpr char *klist = "list";
 constexpr char *klow = "low";
 constexpr char *kmatrix = "matrix";
 constexpr char *kmetric = "metric";
