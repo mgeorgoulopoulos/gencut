@@ -7,12 +7,16 @@
 #include <rapidcsv.h>
 
 #include <algorithm>
+#include <cmath>
 #include <functional>
 
 struct GeneSignalList::Private {
 	AtomBox &geneRegistry;
 	std::map<GeneId, double> geneList;
 	GeneSet genes;
+	
+	// Used for calculating entropy
+	mutable std::vector<int> factorCounts;
 
 	Private(AtomBox &geneRegistry) : geneRegistry(geneRegistry) {}
 
@@ -25,11 +29,15 @@ struct GeneSignalList::Private {
 		if (metric == kaverage)
 			return false;
 
+		if (metric == kentropy)
+			return true;
+
 		return false;
 	}
 
 	// Metrics
 	double average(const GeneList &genes) const;
+	double entropy(const GeneList &genes) const;
 };
 
 GeneSignalList::GeneSignalList(const Options &options, AtomBox &geneRegistry)
@@ -80,10 +88,17 @@ GeneSignalList::GeneSignalList(const Options &options, AtomBox &geneRegistry)
 		}
 	}
 
+	// Allocate enough memory to count factors when 'entropy' is used.
+	d->factorCounts.resize(factors.size());
+
 	// Finally, setup metric
 	if (options.metric == kaverage) {
 		d->metricFunc = [&](const GeneList &genes) {
 			return d->average(genes);
+		};
+	} else if (options.metric == kentropy) {
+		d->metricFunc = [&](const GeneList &genes) {
+			return d->entropy(genes);
 		};
 	} else {
 		throw(Exception(
@@ -115,4 +130,46 @@ double GeneSignalList::Private::average(const GeneList &genes) const {
 	}
 	average /= (double)genes.size();
 	return average;
+}
+
+double GeneSignalList::Private::entropy(const GeneList &genes) const {
+	if (genes.empty()) {
+		return 0.0;
+	}
+
+	for (int &c : factorCounts) {
+		c = 0;
+	}
+	
+	for (const GeneId &geneId : genes) {
+		const auto it = geneList.find(geneId);
+		if (it == geneList.end()) {
+			throw(Exception(
+				{"entropy: gene is not contained in the provided list: ",
+				 geneRegistry.name(geneId)}));
+		}
+		const int factor = (int)it->second;
+
+		if (factor < 0 || factor >= (int)factorCounts.size()) {
+			throw(Exception(
+				{"entropy (internal error): gene is assigned invalid factor: ",
+				 geneRegistry.name(geneId)}));
+		}
+
+		// Count factors
+		factorCounts[factor]++;
+	}
+
+	// Now convert to frequencies and calculate entropy
+	double entropy = 0.0;
+	for (int count : factorCounts) {
+		if (count == 0) {
+			continue;
+		}
+		const double p = (double)count / (double)genes.size();
+		entropy -= p * log(p);
+	}
+
+	return entropy;
+
 }
