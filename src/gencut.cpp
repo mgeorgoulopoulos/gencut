@@ -43,20 +43,9 @@ std::vector<NamedArgument> readSettingsFromCsv(const std::string &filename) {
 	printf("Loading settings from CSV file: %s\n", filename.c_str());
 	rapidcsv::Document doc(filename);
 
-	// Verify that the CSV has the correct columns
-	const std::vector<std::string> columnNames = doc.GetColumnNames();
-	const std::vector<std::string> expectedColumnNames = {kkey, kvalue};
-
-	if (columnNames.size() != expectedColumnNames.size()) {
+	// Verify that the CSV has two columns
+	if (doc.GetColumnCount() != 2) {
 		throw(Exception({filename, "2 columns expected"}));
-	}
-
-	for (int i = 0; i < (int)columnNames.size(); i++) {
-		if (columnNames[i] != expectedColumnNames[i]) {
-			throw(Exception({"Settings file:", filename,
-							 "Expected column:", expectedColumnNames[i],
-							 "Actual column:", columnNames[i]}));
-		}
 	}
 
 	// Now load rows
