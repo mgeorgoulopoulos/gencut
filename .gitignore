@@ -1,6 +1,5 @@
 build/
 Output.csv
-data/GeneCoexpression.csv
 StatsOutput.csv
 data/NucleosomeOccupancyBinaryDistanceMatrix.csv
 data/ProteinInteractions.csv

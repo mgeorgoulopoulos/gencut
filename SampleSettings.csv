@@ -1,5 +1,5 @@
-model,G:/Thesis/gencut/data/Scer-Gene-Model.csv
-signal,G:/Thesis/gencut/data/ProteinInteractions.csv
+model,../data/Scer-Gene-Model.csv
+signal,../data/GeneCoexpression.csv
 signal-type,matrix
 metric,average
 radius,15.0
@@ -9,5 +9,5 @@ p-samples,10000
 padj-threshold,0.01
 overlap-threshold,0.05
 tail,high
-output,G:/Thesis/gencut/Output.csv
-stats-output,G:/Thesis/gencut/StatsOutput.csv
+output,../Output.csv
+stats-output,../StatsOutput.csv
