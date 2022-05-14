@@ -39,6 +39,8 @@ class GenomeCutter {
 		enum class TailSelection {Low, High, Both};
 		TailSelection tailSelection = TailSelection::Low;
 
+		static TailSelection tailSelectionFromString(const std::string &s);
+
 		void print() const;
 		void printHelp() const;
 	};
@@ -49,7 +51,9 @@ class GenomeCutter {
 
 	// Statistics of a sphere-sample.
 	struct SampleStats {
+		int geneCount = 0;
 		double metric = 0.0;
+		double shuffled = 0.0; // value of metric coming from shuffled gene set of the same size
 		double pValue = 0.0;
 		double adjustedPValue = 0.0;
 	};

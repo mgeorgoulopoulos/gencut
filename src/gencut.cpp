@@ -41,11 +41,12 @@ struct NamedArgument {
 
 std::vector<NamedArgument> readSettingsFromCsv(const std::string &filename) {
 	printf("Loading settings from CSV file: %s\n", filename.c_str());
-	rapidcsv::Document doc(filename);
+	rapidcsv::Document doc(
+		filename, rapidcsv::LabelParams(-1 /* No column naems */));
 
-	// Verify that the CSV has two columns
-	if (doc.GetColumnCount() != 2) {
-		throw(Exception({filename, "2 columns expected"}));
+	// Verify that the CSV has at least two columns
+	if (doc.GetColumnCount() < 2) {
+		throw(Exception({filename, "At least 2 columns expected"}));
 	}
 
 	// Now load rows
@@ -222,19 +223,8 @@ Application::Arguments parseCommandLine(const std::vector<std::string> &argv) {
 		}
 
 		if (arg.name == ktail) {
-			if (arg.value == khigh) {
-				result.cutterOptions.tailSelection =
-					GenomeCutter::Options::TailSelection::High;
-			} else if (arg.value == klow) {
-				result.cutterOptions.tailSelection =
-					GenomeCutter::Options::TailSelection::Low;
-			} else if (arg.value == kboth) {
-				result.cutterOptions.tailSelection =
-					GenomeCutter::Options::TailSelection::Both;
-			} else {
-				throw(Exception(
-					{"Unrecognized argument for tail selection: ", arg.value}));
-			}
+			result.cutterOptions.tailSelection =
+				GenomeCutter::Options::tailSelectionFromString(arg.value);
 			continue;
 		}
 

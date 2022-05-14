@@ -12,6 +12,8 @@ void GenomeModel::Options::printHelp() const {
 
 GenomeModel::GenomeModel() {}
 
+#ifndef GENCUT_R_PACKAGE
+
 GenomeModel::GenomeModel(const Options &options, AtomBox &geneRegistry) {
 	printf("Loading genome 3D model from CSV file: %s\n",
 		   options.filename.c_str());
@@ -42,9 +44,14 @@ GenomeModel::GenomeModel(const Options &options, AtomBox &geneRegistry) {
 
 		Gene gene;
 		gene.geneId = geneRegistry.atom(geneName);
-		gene.locus.chromosomeId = doc.GetCell<int>(kChromosome, i);
-		gene.locus.startPosition = doc.GetCell<int>(kStart, i);
-		gene.locus.endPosition = doc.GetCell<int>(kEnd, i);
+		try {
+			gene.locus.chromosomeId = doc.GetCell<int>(kChromosome, i);
+			gene.locus.startPosition = doc.GetCell<int>(kStart, i);
+			gene.locus.endPosition = doc.GetCell<int>(kEnd, i);
+		} catch (...) {
+			// Do not pay much attention if these are not populated
+		}
+
 		gene.position.x = doc.GetCell<double>(kx, i);
 		gene.position.y = doc.GetCell<double>(ky, i);
 		gene.position.z = doc.GetCell<double>(kz, i);
@@ -54,6 +61,47 @@ GenomeModel::GenomeModel(const Options &options, AtomBox &geneRegistry) {
 
 	printf("%d genes loaded\n", (int)genes.size());
 }
+
+#endif // ndef GENCUT_R_PACKAGE
+
+#ifndef SKIP_R_API
+GenomeModel::GenomeModel(Rcpp::NumericMatrix m, AtomBox &geneRegistry) {
+
+	using namespace Rcpp;
+	printf("Loading genome 3D model from R matrix: rows: %d, cols: %d\n",
+		   m.nrow(), m.ncol());
+
+	// Verify that the matrix has the correct columns
+
+	if (m.ncol() != 3) {
+		throw(Exception("R matrix does not have 3 columns. For a genome model "
+						"3 columns (x,y,z) are required."));
+	}
+
+	// Load records
+	CharacterVector rnames = rownames(m);
+	genes.resize(0);
+	genes.reserve(m.nrow());
+	for (int i = 0; i < m.nrow(); i++) {
+		const std::string &geneName = as<std::string>(rnames[i]);
+
+		Gene gene;
+		gene.geneId = geneRegistry.atom(geneName);
+
+		// Leave chromosome / start / end empty for now
+		// gene.locus.chromosomeId = doc.GetCell<int>(kChromosome, i);
+		// gene.locus.startPosition = doc.GetCell<int>(kStart, i);
+		// gene.locus.endPosition = doc.GetCell<int>(kEnd, i);
+		gene.position.x = m(i, 0);
+		gene.position.y = m(i, 1);
+		gene.position.z = m(i, 2);
+
+		genes.push_back(gene);
+	}
+
+	printf("%d genes loaded\n", (int)genes.size());
+}
+#endif // ndef SKIP_R_API
 
 GeneSet GenomeModel::geneSet() const {
 	GeneSet result;
@@ -117,4 +165,27 @@ Vec3D GenomeModel::maxBound() const {
 		result.z = std::max(result.z, gene.position.z);
 	}
 	return result;
+}
+
+void GenomeModel::removeGenesNotExistingIn(const GeneSet &genes, AtomBox &geneRegistry) {
+	// Negotiate gene lists between signal and model. We will remove nonexistent
+	// genes in signal from model.
+	GeneSet genesInModel = geneSet();
+	GeneSet difference;
+	std::set_difference(genesInModel.begin(), genesInModel.end(),
+						genes.begin(), genes.end(),
+						std::inserter(difference, difference.begin()));
+
+	if (!difference.empty()) {
+		printf("Removing %d genes from the 3D model because they don't exist "
+			   "in the signal.\n",
+			   difference.size());
+		for (GeneId gene : difference) {
+			const std::string name = geneRegistry.name(gene);
+			printf("%s ", name.c_str());
+		}
+		printf("\n");
+		removeGenes(difference);
+		printf("3D model remains with %d genes\n", geneSet().size());
+	}
 }

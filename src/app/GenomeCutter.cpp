@@ -2,6 +2,7 @@
 
 #include "GeneSignal.h"
 #include "GenomeModel.h"
+#include "StringConstants.h"
 
 #include <utils/Exception.h>
 
@@ -9,6 +10,19 @@
 
 #include <iterator>
 #include <random>
+
+GenomeCutter::Options::TailSelection
+GenomeCutter::Options::tailSelectionFromString(const std::string &s) {
+	if (s == khigh) {
+		return GenomeCutter::Options::TailSelection::High;
+	} else if (s == klow) {
+		return GenomeCutter::Options::TailSelection::Low;
+	} else if (s == kboth) {
+		return GenomeCutter::Options::TailSelection::Both;
+	}
+
+	throw(Exception({"Unrecognized argument for tail selection: ", s}));
+}
 
 void GenomeCutter::Options::print() const {
 	printf("\tSphere radius: %f\n", sphereRadius);
@@ -59,6 +73,7 @@ struct WorkUnit {
 	GeneList genes;
 	double metric = 0.0;
 	double pValue = 1.0;
+	double shuffled = 0.0; // a value of the metric from a shuffled gene set of the same size
 
 	// P-value rank and Benjamini-Hochberg-adjusted version of it.
 	int rank = 0;
@@ -269,10 +284,14 @@ GenomeCutter::Result GenomeCutter::cut() const {
 	printf("Calculating metric and p-value for %d spheres ... ",
 		   workUnits.size());
 	for (WorkUnit &workUnit : workUnits) {
+		const std::vector<double> &randomizedSample =
+			geneCountToDistribution[(int)workUnit.genes.size()];
+		if (randomizedSample.empty()) {
+			throw(Exception("Empty randomized sample"));
+		}
 		workUnit.metric = d->signal->metric(workUnit.genes);
-		workUnit.pValue = d->calculatePValue(
-			workUnit.metric,
-			geneCountToDistribution[(int)workUnit.genes.size()]);
+		workUnit.pValue = d->calculatePValue(workUnit.metric, randomizedSample);
+		workUnit.shuffled = randomizedSample[rand() % randomizedSample.size()];
 	}
 	printf("Done\n");
 
@@ -285,7 +304,9 @@ GenomeCutter::Result GenomeCutter::cut() const {
 	result.sampleStatistics.reserve(workUnits.size());
 	for (const WorkUnit &workUnit : workUnits) {
 		SampleStats s;
+		s.geneCount = (int)workUnit.genes.size();
 		s.metric = workUnit.metric;
+		s.shuffled = workUnit.shuffled;
 		s.pValue = workUnit.pValue;
 		s.adjustedPValue = workUnit.adjustedPValue;
 		result.sampleStatistics.push_back(s);
@@ -349,7 +370,7 @@ GenomeCutter::Result GenomeCutter::cut() const {
 	}
 
 	// Report clusters
-	for (int i = 0; i < result.clusters.size(); i++) {
+	for (int i = 0; i < (int)result.clusters.size(); i++) {
 		printf("\tCluster %c: %d genes\n", 'A' + i, result.clusters[i].size());
 	}
 

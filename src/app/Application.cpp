@@ -110,9 +110,9 @@ void Application::execute() {
 	// Output statistics, if requested
 	if (!d->arguments.statsOutputFilename.empty()) {
 		FILE *fp = fopen(d->arguments.statsOutputFilename.c_str(), "w");
-		fprintf(fp, "Metric,pValue,pAdj\n");
+		fprintf(fp, "Count,Metric,Shuffled,pValue,pAdj\n");
 		for (const GenomeCutter::SampleStats &stats : result.sampleStatistics) {
-			fprintf(fp, "%f,%f,%f\n", stats.metric, stats.pValue,
+			fprintf(fp, "%d,%f,%f,%f,%f\n", stats.geneCount, stats.metric, stats.shuffled,stats.pValue,
 					stats.adjustedPValue);
 		}
 		fclose(fp);
@@ -137,25 +137,8 @@ void Application::Private::initializeObjects() {
 	// Load 3D model
 	model = GenomeModel(arguments.modelOptions, geneRegistry);
 
-	// Negotiate gene lists between signal and model. We will remove nonexistent
-	// genes in signal from model.
-	GeneSet genesInSignal = signal->geneSet();
-	GeneSet genesInModel = model.geneSet();
-	GeneSet difference;
-	std::set_difference(genesInModel.begin(), genesInModel.end(),
-						genesInSignal.begin(), genesInSignal.end(),
-						std::inserter(difference, difference.begin()));
+	// Handshake model & signal by removing from the model nonexistent genes in signal
+	const GeneSet genesInSignal = signal->geneSet();
+	model.removeGenesNotExistingIn(genesInSignal, geneRegistry);
 
-	if (!difference.empty()) {
-		printf("Removing %d genes from the 3D model because they don't exist "
-			   "in the signal.\n",
-			   difference.size());
-		for (GeneId gene : difference) {
-			const std::string name = geneRegistry.name(gene);
-			printf("%s ", name.c_str());
-		}
-		printf("\n");
-		model.removeGenes(difference);
-		printf("3D model remains with %d genes\n", model.geneSet().size());
-	}
 }

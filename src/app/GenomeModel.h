@@ -35,7 +35,15 @@ class GenomeModel {
 	};
 
 	GenomeModel();
+	
+#ifndef GENCUT_R_PACKAGE
 	GenomeModel(const Options &options, AtomBox &geneRegistry);
+#endif // ndef GENCUT_R_PACKAGE
+
+#ifndef SKIP_R_API
+	GenomeModel(Rcpp::NumericMatrix m, AtomBox &geneRegistry);
+#endif // ndef SKIP_R_API
+
 
 	GeneSet geneSet() const;
 
@@ -47,6 +55,8 @@ class GenomeModel {
 
 	Vec3D minBound() const;
 	Vec3D maxBound() const;
+
+	void removeGenesNotExistingIn(const GeneSet &genes, AtomBox &geneRegistry);
 
   private:
 	std::vector<Gene> genes;

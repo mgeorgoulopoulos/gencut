@@ -23,7 +23,7 @@ class GeneSignal {
 
 	virtual double metric(const GeneList &genes) const = 0;
 
-  private:
+  protected:
 	Options options;
 	AtomBox &geneRegistry;
 };

@@ -4,3 +4,11 @@ data/GeneCoexpression.csv
 StatsOutput.csv
 data/NucleosomeOccupancyBinaryDistanceMatrix.csv
 data/ProteinInteractions.csv
+data/Continents.csv
+data/GeneSignalLevenshtein.csv
+data/Human-TAD-CTCF.csv
+data/Human-TAD-Model.csv
+data/Rossi.csv
+data/TrNoise.csv
+r/gencut-packed.o
+r/packed.o
