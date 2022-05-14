@@ -12,3 +12,4 @@ data/Rossi.csv
 data/TrNoise.csv
 r/gencut-packed.o
 r/packed.o
+bin/

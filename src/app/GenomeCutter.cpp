@@ -8,6 +8,7 @@
 
 #include <omp.h>
 
+#include <algorithm>
 #include <iterator>
 #include <random>
 

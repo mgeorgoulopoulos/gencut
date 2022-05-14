@@ -83,8 +83,8 @@ Application::Arguments parseCommandLine(const std::vector<std::string> &argv) {
 	}
 
 	if (binaryArguments.size() % 2 != 0) {
-		throw(Exception({"All arguments must come in pairs like: --arg value. "
-						 "You passed an odd number of command line tokens."}));
+		throw(Exception("All arguments must come in pairs like: --arg value. "
+						 "You passed an odd number of command line tokens."));
 	}
 
 	std::vector<NamedArgument> namedArguments;

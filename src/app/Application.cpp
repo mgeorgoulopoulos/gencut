@@ -44,7 +44,7 @@ void Application::Arguments::print() const {
 }
 
 struct Application::Private {
-	Private::Private(const Application::Arguments &arguments)
+  	Private(const Application::Arguments &arguments)
 		: arguments(arguments) {}
 
 	void initializeObjects();
